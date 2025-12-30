@@ -1,0 +1,58 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Kullanıcı Tablosu
+model User {
+  id        String   @id @default(uuid()) // Rastgele uzun ID (örn: "a1b2-c3d4...")
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // İlişkiler: Bir kullanıcının birden çok harcaması ve bütçesi olabilir
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+// 2. İşlem (Harcama/Gelir) Tablosu
+model Transaction {
+  id          String          @id @default(uuid())
+  amount      Decimal         @db.Decimal(10, 2) // Para işlemleri için Decimal şart! (99.90 gibi)
+  description String
+  date        DateTime
+  type        TransactionType // ENUM: Sadece INCOME veya EXPENSE olabilir
+  category    String          // Örn: "Gıda", "Kira"
+  
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 3. Bütçe Hedefleri Tablosu
+model Budget {
+  id        String   @id @default(uuid())
+  category  String   // Örn: "Gıda" için bütçe
+  limit     Decimal  @db.Decimal(10, 2) // Örn: 5000 TL
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum: Sadece belirli değerlerin girilmesini sağlar
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
