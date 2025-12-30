@@ -2,16 +2,33 @@
 
 import { prisma } from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import { auth } from "@clerk/nextjs/server"; // Clerk importu
 
 // 1. İşlem Ekleme
 export async function addTransaction(formData: FormData) {
+  // DÜZELTME BURADA: auth() önüne 'await' ekledik
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Kullanıcı girişi yapılmamış!");
+  }
+
   const amount = parseFloat(formData.get("amount") as string)
   const description = formData.get("description") as string
   
-  let user = await prisma.user.findFirst();
+  // Veritabanında bu kullanıcıyı bul (Clerk ID'si ile)
+  // Not: Clerk ID'yi geçici olarak email alanında tutuyoruz.
+  let user = await prisma.user.findUnique({
+    where: { email: userId } 
+  });
+  
+  // Kullanıcı yoksa oluştur
   if (!user) {
     user = await prisma.user.create({
-      data: { email: "test@demo.com", name: "Test User" }
+      data: { 
+        email: userId, // Clerk ID'yi buraya kaydediyoruz
+        name: "Clerk User" 
+      }
     })
   }
 
@@ -29,26 +46,22 @@ export async function addTransaction(formData: FormData) {
   revalidatePath("/")
 }
 
-// 2. GEMINI AI (Güvenli ve Akıllı Versiyon)
+// 2. GEMINI AI (Güvenli Versiyon - Aynı Kalıyor)
 export async function getFinancialAdvice(totalAmount: number, categorySummary: string) {
-  // GÜVENLİK DÜZELTMESİ: Anahtarı koddan sildik, .env dosyasından okuyoruz
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.error("API Key Eksik: .env dosyasını kontrol edin.");
-    return "Sistem hatası: API anahtarı sunucuda bulunamadı.";
+    return "HATA: API Anahtarı bulunamadı.";
   }
 
   try {
-    // 1. Modelleri Listele
     const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
     const listResponse = await fetch(listUrl);
     
-    if (!listResponse.ok) return "Yapay zeka servisine bağlanılamadı (Liste Hatası).";
+    if (!listResponse.ok) return "Yapay zeka servisine bağlanılamadı.";
     
     const listData = await listResponse.json();
     
-    // 2. Uygun Modeli Bul
     const validModel = listData.models?.find((m: any) => 
       m.supportedGenerationMethods?.includes("generateContent") &&
       m.name.includes("gemini")
@@ -56,7 +69,6 @@ export async function getFinancialAdvice(totalAmount: number, categorySummary: s
 
     if (!validModel) return "Uygun model bulunamadı.";
 
-    // 3. İsteği Gönder
     const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${validModel.name}:generateContent?key=${apiKey}`;
 
     const prompt = `
@@ -70,7 +82,7 @@ export async function getFinancialAdvice(totalAmount: number, categorySummary: s
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
 
-    if (!response.ok) return "Yapay zeka servisine bağlanılamadı (Üretim Hatası).";
+    if (!response.ok) return "Tavsiye üretilemedi.";
 
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "Tavsiye üretilemedi.";

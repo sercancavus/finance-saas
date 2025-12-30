@@ -50,3 +50,5 @@ next-env.d.ts
 .env.production.local
 node_modules
 .next
+# clerk configuration (can include secrets)
+/.clerk/

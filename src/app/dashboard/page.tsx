@@ -2,38 +2,72 @@ import { addTransaction } from "@/app/actions";
 import { prisma } from "@/lib/db";
 import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { AIAdvisor } from "@/components/dashboard/AIAdvisor";
+// 1. Clerk auth importu
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-  // 1. Veritabanından ham veriyi çek
+  // 2. Giriş yapan kullanıcının ID'sini al
+  const { userId } = await auth();
+
+  // 3. Giriş yoksa ana sayfaya at
+  if (!userId) {
+    redirect("/");
+  }
+
+  // 4. Bu Clerk ID'sine sahip veritabanı kullanıcısını bul
+  const dbUser = await prisma.user.findUnique({
+    where: { email: userId } // Clerk ID'yi email alanında tutuyorduk
+  });
+
+  // Eğer veritabanında henüz kaydı yoksa (ilk kez giriyorsa) işlem listesi boştur
+  if (!dbUser) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold">Hoşgeldiniz! 👋</h1>
+        <p>Hesabınız oluşturuluyor, lütfen bir işlem ekleyerek başlayın.</p>
+        
+        {/* Boş olsa bile işlem ekleyebilmesi için formu gösterelim */}
+        <div className="mt-8 max-w-md mx-auto bg-white p-6 rounded-xl shadow-sm border">
+            <h2 className="text-lg font-semibold mb-4">İlk İşlemini Ekle</h2>
+            <form action={addTransaction} className="flex flex-col gap-4">
+                <input type="text" name="description" placeholder="Örn: Market" className="border p-3 rounded" required />
+                <input type="number" name="amount" placeholder="0.00" className="border p-3 rounded" required />
+                <button type="submit" className="bg-blue-600 text-white p-3 rounded">Ekle</button>
+            </form>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. SADECE bu kullanıcıya ait işlemleri çek (where: { userId: dbUser.id })
   const transactionsRaw = await prisma.transaction.findMany({
+    where: {
+      userId: dbUser.id // <--- İŞTE GÜVENLİK BURADA SAĞLANIYOR
+    },
     orderBy: { createdAt: 'desc' }
   });
 
-  // 2. Decimal (Para) tipini Number'a çevir (Serileştirme hatasını önler)
+  // Decimal -> Number dönüşümü
   const transactions = transactionsRaw.map((t) => ({
     ...t,
     amount: Number(t.amount)
   }));
 
-  // 3. Toplam harcamayı hesapla (AI Asistanı için)
   const totalAmount = transactions.reduce((acc, t) => acc + t.amount, 0);
 
   return (
     <div className="w-full max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Genel Bakış</h1>
 
-      {/* --- ÜST KISIM: GRAFİK --- */}
       <div className="mb-8">
         <ExpenseChart transactions={transactions} />
       </div>
 
-      {/* --- ORTA KISIM: AI ASİSTAN --- */}
       <AIAdvisor totalAmount={totalAmount} transactionCount={transactions.length} />
 
-      {/* --- ALT KISIM: FORM VE LİSTE (GRID) --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Sol Kolon: Ekleme Formu */}
+        {/* Form */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
             <h2 className="text-lg font-semibold mb-4 text-gray-700">Hızlı İşlem Ekle</h2>
             <form action={addTransaction} className="flex flex-col gap-4">
@@ -64,7 +98,7 @@ export default async function DashboardPage() {
             </form>
         </div>
 
-        {/* Sağ Kolon: Liste */}
+        {/* Liste */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-lg font-semibold mb-4 text-gray-700">Son İşlemler</h2>
             {transactions.length === 0 ? (
@@ -80,7 +114,6 @@ export default async function DashboardPage() {
                 </ul>
             )}
         </div>
-
       </div>
     </div>
   );

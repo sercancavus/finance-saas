@@ -31,39 +31,37 @@ Projeyi yerel ortamınızda çalıştırmak için adımları izleyin:
    ```bash
    git clone [https://github.com/sercancavus/finance-saas.git](https://github.com/sercancavus/finance-saas.git)
    cd finance-saas
-Bağımlılıkları Yükleyin:
+2. **Bağımlılıkları Yükleyin:**
+   ```bash
+   npm install
+   ```
 
-Bash
+3. **Çevre Değişkenlerini Ayarlayın:**
+   Ana dizinde `.env` dosyası oluşturun ve aşağıdaki değerleri girin:
+   ```env
+   DATABASE_URL="postgresql://..."
+   GEMINI_API_KEY="AIza..."
+   ```
 
-npm install
-Çevre Değişkenlerini Ayarlayın: Ana dizinde .env dosyası oluşturun ve aşağıdaki değerleri girin:
+4. **Veritabanını Hazırlayın:**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-Kod snippet'i
+5. **Uygulamayı Başlatın:**
+   ```bash
+   npm run dev
+   ```
+   Tarayıcıda `http://localhost:3000` adresine gidin.
 
-DATABASE_URL="postgresql://..."
-GEMINI_API_KEY="AIza..."
-Veritabanını Hazırlayın:
+## 🗺️ Yol Haritası (Roadmap)
 
-Bash
+- [x] Temel Dashboard ve Veritabanı Kurulumu
+- [x] Google Gemini AI Entegrasyonu
+- [x] Grafiksel Raporlar
+- [ ] Authentication (Clerk ile Giriş Sistemi) 🔜 *Sıradaki Adım*
+- [ ] Mobil Uygulama (React Native)
 
-npx prisma generate
-npx prisma db push
-Uygulamayı Başlatın:
-
-Bash
-
-npm run dev
-Tarayıcıda http://localhost:3000 adresine gidin.
-
-🗺️ Yol Haritası (Roadmap)
-[x] Temel Dashboard ve Veritabanı Kurulumu
-
-[x] Google Gemini AI Entegrasyonu
-
-[x] Grafiksel Raporlar
-
-[ ] Authentication (Clerk ile Giriş Sistemi) 🔜 Sıradaki Adım
-
-[ ] Mobil Uygulama (React Native)
-
-Geliştirici: Sercan Çavuş
+---
+*Geliştirici: Sercan Çavuş*
