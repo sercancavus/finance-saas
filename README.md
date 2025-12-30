@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💰 FinansAI - Yapay Zeka Destekli Finans Asistanı
 
-## Getting Started
+FinansAI, kişisel harcamalarınızı takip etmenizi sağlayan, harcama verilerini görselleştiren ve **Google Gemini AI** entegrasyonu ile size özel tasarruf tavsiyeleri veren modern bir SaaS projesidir.
 
-First, run the development server:
+![Project Status](https://img.shields.io/badge/Status-Development-orange)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-```bash
+## 🚀 Özellikler
+
+- **📊 Harcama Takibi:** Gelir ve gider kalemlerini ekleme, listeleme.
+- **🤖 AI Danışman:** Google Gemini (Yapay Zeka) ile harcamalarınızı analiz edip tasarruf önerileri alma.
+- **📈 Görselleştirme:** Recharts ile harcamaların grafiksel analizi.
+- **🗄️ Veritabanı:** PostgreSQL ve Prisma ORM ile güvenli veri saklama.
+- **🎨 Modern Arayüz:** Tailwind CSS ile responsive ve şık tasarım.
+
+## 🛠️ Kullanılan Teknolojiler
+
+- **Frontend & Backend:** [Next.js 14](https://nextjs.org/) (App Router, Server Actions)
+- **Dil:** TypeScript
+- **Veritabanı:** PostgreSQL (Neon Tech)
+- **ORM:** Prisma
+- **Yapay Zeka:** Google Gemini AI API
+- **UI Kit:** Tailwind CSS, Lucide Icons
+- **Grafikler:** Recharts
+
+## ⚙️ Kurulum
+
+Projeyi yerel ortamınızda çalıştırmak için adımları izleyin:
+
+1. **Repoyu Klonlayın:**
+   ```bash
+   git clone [https://github.com/sercancavus/finance-saas.git](https://github.com/sercancavus/finance-saas.git)
+   cd finance-saas
+Bağımlılıkları Yükleyin:
+
+Bash
+
+npm install
+Çevre Değişkenlerini Ayarlayın: Ana dizinde .env dosyası oluşturun ve aşağıdaki değerleri girin:
+
+Kod snippet'i
+
+DATABASE_URL="postgresql://..."
+GEMINI_API_KEY="AIza..."
+Veritabanını Hazırlayın:
+
+Bash
+
+npx prisma generate
+npx prisma db push
+Uygulamayı Başlatın:
+
+Bash
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Tarayıcıda http://localhost:3000 adresine gidin.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🗺️ Yol Haritası (Roadmap)
+[x] Temel Dashboard ve Veritabanı Kurulumu
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+[x] Google Gemini AI Entegrasyonu
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+[x] Grafiksel Raporlar
 
-## Learn More
+[ ] Authentication (Clerk ile Giriş Sistemi) 🔜 Sıradaki Adım
 
-To learn more about Next.js, take a look at the following resources:
+[ ] Mobil Uygulama (React Native)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Geliştirici: Sercan Çavuş
